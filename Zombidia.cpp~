@@ -20,8 +20,8 @@ int main(){
 	SDL_Rect fpos;
 	fpos.x = 0;
 	fpos.y = 0;
-	fpos.w = 500;
-	fpos.h = 300;
+	fpos.x = 500;
+	fpos.y = 300;
 	SDL_Rect pos;
 	pos.x = 0;
 	pos.y = 300;
