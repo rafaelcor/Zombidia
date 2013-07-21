@@ -43,7 +43,7 @@ int main(){
 		SDL_PumpEvents();
 		SDL_BlitSurface(fondo, &fpos, window, NULL);
 		SDL_BlitSurface(imagen, NULL, window, &pos);
-		SDL_Flip(window);
+		//SDL_Flip(window);
 		Uint8 *keystate = SDL_GetKeyState(NULL);
 		
 		if(keystate[SDLK_LEFT]){
@@ -75,7 +75,7 @@ int main(){
 			}
 		pos.x += velx;
 		pos.y += vely;
-		SDL_Flip(window);
+		//SDL_Flip(window);
 		while(SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT){
@@ -105,18 +105,18 @@ int main(){
 			//ppos.x = 0;
 			//ppos.y = 100;
 			//SDL_BlitSurface(piso, NULL, window, &ppos);
-			SDL_Flip(window);
+			//SDL_Flip(window);
 		}
 		if (enelpueblo == 1)
 		{
 			ppos.x = 0;
 			ppos.y = 100;
 			SDL_BlitSurface(piso, NULL, window, &ppos);
-			SDL_Flip(window);
+			//SDL_Flip(window);
 		}
 			
 		
-
+		SDL_Flip(window);
 	goto loop;
 	return 0;
 }
