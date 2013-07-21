@@ -17,6 +17,8 @@ int main(){
 	SDL_Surface *imagen = IMG_Load("personaje.png"); 
 	SDL_Surface *modimage = zoomSurface(imagen, 2, 2, SMOOTHING_OFF);
 	SDL_Surface *fondo = IMG_Load("fondo.png");
+	SDL_Surface *piso = IMG_Load("piso.png");
+	SDL_Rect ppos;
 	SDL_Rect fpos;
 	fpos.x = 0;
 	fpos.y = 0;
@@ -24,7 +26,8 @@ int main(){
 	fpos.h = 300;
 	SDL_Rect pos;
 	pos.x = 0;
-	pos.y = 300;
+	pos.y = 100;
+	int enelpueblo = 0;
 	
 	//SDL_FillRect(window, NULL, 0xFFFFFF);
 	SDL_BlitSurface(fondo, NULL, window, &fpos);
@@ -93,12 +96,25 @@ int main(){
 				}
 			}
 		}
-		if (pos.x >= 150){
+		if (pos.x >= 499){
 			fpos.x = 500;
+			pos.x = 24;
+			enelpueblo = 1;
 			SDL_BlitSurface(fondo, &fpos, window, NULL);
 			SDL_BlitSurface(imagen, NULL, window, &pos);
+			ppos.x = 0;
+			ppos.y = 100;
+			SDL_BlitSurface(piso, NULL, window, &ppos);
 			SDL_Flip(window);
 		}
+		//else if (pos.x >= 0){
+			//fpos.x = 0;
+			//pos.x = 24;
+			//enelpueblo = 0;
+			//SDL_BlitSurface(fondo, &fpos, window, NULL);
+			//SDL_BlitSurface(imagen, NULL, window, &pos);
+			//SDL_Flip(window);
+		//}
 	goto loop;
 	return 0;
 }
