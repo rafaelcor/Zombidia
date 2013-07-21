@@ -102,19 +102,21 @@ int main(){
 			enelpueblo = 1;
 			SDL_BlitSurface(fondo, &fpos, window, NULL);
 			SDL_BlitSurface(imagen, NULL, window, &pos);
+			//ppos.x = 0;
+			//ppos.y = 100;
+			//SDL_BlitSurface(piso, NULL, window, &ppos);
+			SDL_Flip(window);
+		}
+		if (enelpueblo == 1)
+		{
 			ppos.x = 0;
 			ppos.y = 100;
 			SDL_BlitSurface(piso, NULL, window, &ppos);
 			SDL_Flip(window);
 		}
-		//else if (pos.x >= 0){
-			//fpos.x = 0;
-			//pos.x = 24;
-			//enelpueblo = 0;
-			//SDL_BlitSurface(fondo, &fpos, window, NULL);
-			//SDL_BlitSurface(imagen, NULL, window, &pos);
-			//SDL_Flip(window);
-		//}
+			
+		
+
 	goto loop;
 	return 0;
 }
