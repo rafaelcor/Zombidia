@@ -1,21 +1,119 @@
 #include <SDL/SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <SDL_rotozoom.h>
+
+SDL_Surface *window;
 int x;
 int y;
+Uint8 state; //0-Pueblo 1-Fuera
+bool change;
+int mouse[2]; //0-X 1-Y 2-Left Button 3-Right Button
+bool mbutton;
+TTF_Font *butfont;
+
+bool events(){
+ SDL_Event event;
+	SDL_PumpEvents();
+	mbutton = false;
+	while(SDL_PollEvent(&event)){
+		if (event.type == SDL_QUIT){
+			return true;
+		}
+		if(event.type == SDL_MOUSEBUTTONDOWN){
+			if(event.button.button == SDL_BUTTON_LEFT){ 
+				mbutton = true;
+			}
+		}
+	}
+	SDL_GetMouseState(&mouse[0], &mouse[1]);
+	return false;
+}
+
+class Button{
+	public:
+		void (*func)();
+		SDL_Rect ubc;
+		char text[30];
+		SDL_Surface *surface;
+		void set(void (*callfunc)(), unsigned short nx, unsigned short ny, const char *ntext){
+			func = callfunc;
+			ubc.x = nx;
+			ubc.y = ny;
+			SDL_Color color = {240, 215, 158};
+			SDL_Surface *text = TTF_RenderUTF8_Solid(butfont, ntext, color);
+			surface = SDL_CreateRGBSurface(SDL_SWSURFACE, text->w+2, text->h+2, 32, 16711680, 65280, 255, 0);
+			SDL_FillRect(surface, NULL, 0);
+			SDL_Rect rect;
+			rect.x = 1;
+			rect.y = 1;
+			rect.w = text->w;
+			rect.h = text->h;
+			SDL_FillRect(surface, &rect, 0xCB3700);
+			SDL_BlitSurface(text, NULL, surface, &rect);
+			SDL_FreeSurface(text);
+		}
+		void update(){
+			if (mouse[0] >= ubc.x and mouse[0] < ubc.x+surface->w and mouse[1] >= ubc.y and mouse[1] < ubc.y+surface->h and mbutton){
+				func();
+				printf("%d %d\n", mouse[0], mouse[1]);
+			}
+		}
+		void blit(){
+			SDL_BlitSurface(surface, NULL, window, &ubc);
+		}
+};
+
+void pfunc(){
+	printf("Click\n");
+}
+
+void interface(bool exit){
+	static Button *buttons = NULL;
+ static Uint8 num = 0;
+	if (change and not exit){
+		if (buttons != NULL){
+			delete [] buttons;
+		}
+		num = 2;
+		buttons = new Button[2];
+		buttons[0].set(pfunc, 0, 0, "Test");
+		buttons[1].set(pfunc, 0, 100, "Test2");
+		/*switch(state){
+			case 0:
+			case 1:
+		}*/
+	}
+	if (not exit){
+		for(Uint8 i=0 ; i<num ; i++){
+			buttons[i].update();
+		 buttons[i].blit();
+		}
+	}
+	else{
+		delete [] buttons;
+	}
+}
+
+void exit(){
+	interface(true);
+	TTF_CloseFont(butfont);
+	SDL_Quit();
+	TTF_Quit();
+}
+
 int main(){
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
+	if (SDL_Init(SDL_INIT_VIDEO) < 0){
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return 1;
 	}
-	SDL_Surface *window = SDL_SetVideoMode(500, 300, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+	window = SDL_SetVideoMode(500, 300, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	SDL_WM_SetCaption("Zombidia", "Zombidia");
+	TTF_Init();
+	butfont = TTF_OpenFont("FreeSans.ttf", 15);
 	
-	SDL_Surface *imagen = IMG_Load("personaje.png"); 
-	SDL_Surface *modimage = zoomSurface(imagen, 2, 2, SMOOTHING_OFF);
+	SDL_Surface *imagen = IMG_Load("personaje.png");
 	SDL_Surface *fondo = IMG_Load("fondo.png");
 	SDL_Surface *piso = IMG_Load("piso.png");
 	SDL_Rect ppos;
@@ -27,23 +125,26 @@ int main(){
 	SDL_Rect pos;
 	pos.x = 0;
 	pos.y = 100;
-	int enelpueblo = 0;
+	state = 1;
+	change = true;
 	
 	//SDL_FillRect(window, NULL, 0xFFFFFF);
 	SDL_BlitSurface(fondo, NULL, window, &fpos);
 	SDL_BlitSurface(imagen, NULL, window, &pos);
 	SDL_Flip(window);
-
 	
-	atexit(SDL_Quit);
-	SDL_Event event;
+	atexit(exit);
 	int velx = pos.x, vely = pos.y;
 	loop:
 		SDL_Delay(1000/30);
-		SDL_PumpEvents();
+		if(events()){
+			SDL_FreeSurface(fondo);
+			SDL_FreeSurface(imagen);
+			SDL_FreeSurface(piso);
+			return 0;
+		}
 		SDL_BlitSurface(fondo, &fpos, window, NULL);
 		SDL_BlitSurface(imagen, NULL, window, &pos);
-		//SDL_Flip(window);
 		Uint8 *keystate = SDL_GetKeyState(NULL);
 		
 		if(keystate[SDLK_LEFT]){
@@ -76,30 +177,10 @@ int main(){
 		pos.x += velx;
 		pos.y += vely;
 		//SDL_Flip(window);
-		while(SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT){
-				SDL_FreeSurface(imagen);
-				SDL_FreeSurface(modimage);
-				SDL_FreeSurface(fondo);
-				return 0;
-			}
-			if( event.type == SDL_MOUSEBUTTONDOWN ) {
-				if( event.button.button == SDL_BUTTON_LEFT )
-				{ 
-					x = event.button.x; 
-					y = event.button.y;
-					printf("x: %d\n", x);
-					printf("y: %d\n", y);
-					printf("xper: %d\n", pos.x);
-					printf("yper: %d\n", pos.y);
-				}
-			}
-		}
 		if (pos.x >= 499){
 			fpos.x = 500;
 			pos.x = 24;
-			enelpueblo = 1;
+			state = 0;
 			SDL_BlitSurface(fondo, &fpos, window, NULL);
 			SDL_BlitSurface(imagen, NULL, window, &pos);
 			//ppos.x = 0;
@@ -107,16 +188,16 @@ int main(){
 			//SDL_BlitSurface(piso, NULL, window, &ppos);
 			//SDL_Flip(window);
 		}
-		if (enelpueblo == 1)
+		if (state == 0)
 		{
 			ppos.x = 0;
 			ppos.y = 100;
 			SDL_BlitSurface(piso, NULL, window, &ppos);
 			//SDL_Flip(window);
 		}
-			
-		
+		interface(false);
 		SDL_Flip(window);
+		change = false;
 	goto loop;
 	return 0;
 }
