@@ -35,33 +35,51 @@ class Button{
 	public:
 		void (*func)();
 		SDL_Rect ubc;
-		char text[30];
-		SDL_Surface *surface;
+		bool focus;
+		SDL_Surface *surface, *rect;
 		void set(void (*callfunc)(), unsigned short nx, unsigned short ny, const char *ntext){
 			func = callfunc;
 			ubc.x = nx;
 			ubc.y = ny;
 			SDL_Color color = {240, 215, 158};
 			SDL_Surface *text = TTF_RenderUTF8_Solid(butfont, ntext, color);
-			surface = SDL_CreateRGBSurface(SDL_SWSURFACE, text->w+2, text->h+2, 32, 16711680, 65280, 255, 0);
-			SDL_FillRect(surface, NULL, 0);
-			SDL_Rect rect;
-			rect.x = 1;
-			rect.y = 1;
-			rect.w = text->w;
-			rect.h = text->h;
-			SDL_FillRect(surface, &rect, 0xCB3700);
-			SDL_BlitSurface(text, NULL, surface, &rect);
+			surface = SDL_CreateRGBSurface(SDL_SWSURFACE, text->w, text->h, 32, 16711680, 65280, 255, 0);
+			rect = SDL_CreateRGBSurface(SDL_SWSURFACE, text->w+2, text->h+2, 32, 16711680, 65280, 255, 0);
+			SDL_FillRect(surface, NULL, 0xA43019);
+			SDL_BlitSurface(text, NULL, surface, NULL);
+			SDL_FillRect(rect, NULL, 0);
+			SDL_Rect subc;
+			subc.x = 1;
+			subc.y = 1;
+			SDL_BlitSurface(surface, NULL, rect, &subc);
+			focus = false;
 			SDL_FreeSurface(text);
 		}
 		void update(){
-			if (mouse[0] >= ubc.x and mouse[0] < ubc.x+surface->w and mouse[1] >= ubc.y and mouse[1] < ubc.y+surface->h and mbutton){
-				func();
-				printf("%d %d\n", mouse[0], mouse[1]);
+			if (mouse[0] >= ubc.x and mouse[0] < ubc.x+surface->w and mouse[1] >= ubc.y and mouse[1] < ubc.y+surface->h){
+				if(not focus){
+					SDL_FillRect(rect, NULL, 0xF0D79E);
+					SDL_Rect subc;
+					subc.x = 1;
+					subc.y = 1;
+					SDL_BlitSurface(surface, NULL, rect, &subc);
+					focus = true;
+				}
+				if (mbutton){
+					func();
+				}
+			}
+			else if(focus){
+				SDL_FillRect(rect, NULL, 0);
+				SDL_Rect subc;
+				subc.x = 1;
+				subc.y = 1;
+				SDL_BlitSurface(surface, NULL, rect, &subc);
+				focus = false;
 			}
 		}
 		void blit(){
-			SDL_BlitSurface(surface, NULL, window, &ubc);
+			SDL_BlitSurface(rect, NULL, window, &ubc);
 		}
 };
 
